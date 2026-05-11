@@ -3,6 +3,7 @@ import pandas as pd
 import joblib
 import time
 import base64
+from PIL import Image  # Thư viện xử lý ảnh để làm App Icon
 
 # 1. HÀM FEATURE ENGINEERING
 def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
@@ -27,8 +28,18 @@ FEATURES = [
     'tiem_nang_giua_lai'
 ]
 
-# 2. CẤU HÌNH GIAO DIỆN CHÍNH
-st.set_page_config(page_title="CafeinSight", page_icon="💸☕", layout="centered")
+# ĐƯỜNG DẪN FILE DÀNH CHO DEPLOY MẠNG (Không dùng ổ C nữa)
+bg_path = "istockphoto-1822889082-612x612.png"
+logo_path = "logo.png"
+
+# 2. CẤU HÌNH GIAO DIỆN & APP ICON
+try:
+    # Dùng chính logo của bạn làm icon ngoài màn hình điện thoại
+    app_icon = Image.open(logo_path)
+except:
+    app_icon = "☕" # Backup nếu không tìm thấy hình
+
+st.set_page_config(page_title="CafeinSight", page_icon=app_icon, layout="centered")
 
 @st.cache_data
 def get_base64_of_bin_file(bin_file):
@@ -36,16 +47,12 @@ def get_base64_of_bin_file(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-# Đường dẫn file
-bg_path = r"C:\UEH\AI\Homework fuzzy\fuzzy_doanh_thu\istockphoto-1822889082-612x612.png"
-logo_path = r"C:\UEH\AI\Homework fuzzy\fuzzy_doanh_thu\logo.png"
-
-# --- CUSTOM CSS: HÌNH NỀN, FONT CHỮ & ĐỔI MÀU ĐỎ -> VÀNG SẠCH SẼ ---
+# --- CUSTOM CSS: HÌNH NỀN, FONT CHỮ & ĐỔI MÀU ---
 try:
     img_base64 = get_base64_of_bin_file(bg_path)
     custom_css = f"""
     <style>
-    /* 1. Cấu hình hình nền */
+    /* Hình nền */
     [data-testid="stAppViewContainer"] {{
         background-image: url("data:image/png;base64,{img_base64}");
         background-size: cover;
@@ -56,7 +63,7 @@ try:
         background: rgba(0,0,0,0);
     }}
 
-    /* 2. Làm mờ nền các khung chứa để dễ đọc chữ */
+    /* Khung nền mờ */
     [data-testid="stForm"], .st-emotion-cache-1wivap2, .st-emotion-cache-12w0qpk {{
         background-color: rgba(255, 255, 255, 0.9) !important;
         padding: 25px;
@@ -64,14 +71,16 @@ try:
         box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }}
 
-    /* 3. LÀM TO CHỮ TOÀN BỘ APP */
+    /* Chữ to toàn bộ */
     html, body, [class*="css"], .stMarkdown p, label, div[data-testid="stMarkdownContainer"] p {{
-        font-size: 15px !important; 
+        font-size: 18px !important; 
     }}
-    h1 {{ font-size: 2.8rem !important; text-align: center; }}
+    
+    /* Tiêu đề */
+    h1 {{ font-size: 24px !important; text-align: center; }} 
     h3 {{ font-size: 1.8rem !important; }}
 
-    /* 4. CHỈNH NÚT BẤM (Gọn gàng, đổi viền & chữ sang vàng khi đưa chuột vào) */
+    /* Nút bấm vàng */
     .stButton > button {{
         font-size: 20px !important; 
         font-weight: bold !important;
@@ -79,26 +88,21 @@ try:
         padding: 10px 24px !important;
         transition: 0.2s;
     }}
-    /* Đổi màu đỏ mặc định thành vàng khi hover/click */
     .stButton > button:hover, .stButton > button:active, .stButton > button:focus {{
         border-color: #FFC107 !important;
         color: #FFC107 !important;
         background-color: transparent !important;
-        box-shadow: none !important; /* Xóa highlight phát sáng lem nhem */
+        box-shadow: none !important;
     }}
 
-    /* 5. CÁC Ô NHẬP LIỆU & NÚT RADIO (Đổi màu đỏ mặc định -> Vàng) */
-    
-    /* Viền ô nhập liệu khi Hover hoặc Click vào */
+    /* Ô nhập liệu & Radio vàng */
     div[data-baseweb="input"]:hover, div[data-baseweb="input"]:focus-within {{
         border-color: #FFC107 !important;
-        box-shadow: none !important; /* Xóa highlight dày */
+        box-shadow: none !important;
     }}
     div[data-baseweb="input"] {{
         font-size: 18px !important;
     }}
-
-    /* Mẹo CSS bẻ màu: Xoay màu đỏ của nút Radio mặc định thành màu Vàng */
     .stRadio > div {{
         filter: hue-rotate(50deg) saturate(150%);
     }}
@@ -108,11 +112,11 @@ try:
 except Exception as e:
     st.error(f"Lỗi tải CSS hoặc hình nền: {e}")
 
-# --- CHÈN LOGO CĂN GIỮA TUYỆT ĐỐI ---
+# --- CHÈN LOGO CĂN GIỮA ---
 try:
     logo_base64 = get_base64_of_bin_file(logo_path)
     st.markdown(
-        f'<div style="text-align: center; margin-bottom: -20px;">'
+        f'<div style="text-align: center; margin-bottom: -10px;">'
         f'<img src="data:image/png;base64,{logo_base64}" width="280">'
         f'</div>',
         unsafe_allow_html=True
@@ -120,7 +124,7 @@ try:
 except FileNotFoundError:
     st.warning("⚠️ Không tìm thấy file logo.png")
 
-# --- TIÊU ĐỀ ---
+# --- TIÊU ĐỀ CHÍNH ---
 st.title("Ước Tính Doanh Thu Quán Cà Phê")
 st.markdown("---")
 
@@ -142,7 +146,6 @@ with st.container():
         co_delivery_str = st.radio("🛵 Có giao hàng (App)?", ["Không", "Có"], index=1)
         cho_ngoi_lau_str = st.radio("💻 Cho khách ngồi lâu (làm việc)?", ["Không", "Có"], index=1)
 
-# Chuyển đổi map_dict
 map_dict = {"Có": 1, "Không": 0}
 vi_tri = map_dict[vi_tri_str]
 co_cho_ngoi = map_dict[co_cho_ngoi_str]
@@ -154,13 +157,11 @@ st.markdown("---")
 # 4. XỬ LÝ NÚT DỰ ĐOÁN & POP-UP
 if st.button("🚀 PHÂN TÍCH DOANH THU", use_container_width=True):
     try:
-        # Hiệu ứng pop-up toast loading
         st.toast('Đang khởi động AI...', icon='🤖')
         time.sleep(0.5)
         st.toast('Đang thu thập dữ liệu thị trường...', icon='📊')
         time.sleep(0.5)
         
-        # Load mô hình
         model = joblib.load('best_revenue_model.pkl')
         
         raw_data = {
@@ -176,18 +177,15 @@ if st.button("🚀 PHÂN TÍCH DOANH THU", use_container_width=True):
         daily_revenue = model.predict(df_input[FEATURES])[0]
         daily_revenue = max(daily_revenue, 0)
         
-        # Hiệu ứng bóng bay
         st.balloons()
         st.toast('Tính toán thành công!', icon='🎉')
         
-        # Hiển thị kết quả trong khung đẹp mắt
         st.success("💰 **KẾT QUẢ DỰ ĐOÁN**")
         col_res1, col_res2, col_res3 = st.columns(3)
         col_res1.metric("Doanh thu / Ngày 🪙", f"{daily_revenue:,.0f} đ")
         col_res2.metric("Doanh thu / Tháng 💵", f"{daily_revenue * 30:,.0f} đ")
         col_res3.metric("Doanh thu / Năm 📈", f"{daily_revenue * 365:,.0f} đ")
         
-        # Nhận xét
         st.markdown("### 🔍 Phân Tích Chuyên Gia")
         if daily_revenue >= 10_000_000:
             st.info("🌟 **Rất tiềm năng!** Mô hình kinh doanh đang mang lại dòng tiền xuất sắc. Hãy cân nhắc mở rộng quy mô.")
