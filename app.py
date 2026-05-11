@@ -3,7 +3,7 @@ import pandas as pd
 import joblib
 import time
 import base64
-from PIL import Image  # Thư viện xử lý ảnh để làm App Icon
+from PIL import Image  # Thư viện dùng để đọc file ảnh làm icon
 
 # 1. HÀM FEATURE ENGINEERING
 def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
@@ -34,11 +34,13 @@ logo_path = "logo.png"
 
 # 2. CẤU HÌNH GIAO DIỆN & APP ICON
 try:
-    # Dùng chính logo của bạn làm icon ngoài màn hình điện thoại
+    # --- ĐÂY LÀ ĐOẠN ĐỔI LOGO TRÊN ĐIỆN THOẠI ---
+    # Dùng chính tấm logo.png của bạn làm Page Icon
     app_icon = Image.open(logo_path)
 except:
-    app_icon = "☕" # Backup nếu không tìm thấy hình
+    app_icon = "☕"  # Backup nếu lỗi không tìm thấy file
 
+# Thiết lập App Icon
 st.set_page_config(page_title="CafeinSight", page_icon=app_icon, layout="centered")
 
 @st.cache_data
@@ -47,11 +49,16 @@ def get_base64_of_bin_file(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-# --- CUSTOM CSS: HÌNH NỀN, FONT CHỮ & ĐỔI MÀU ---
+# --- CUSTOM CSS: HÌNH NỀN, ẨN MENU, ĐỔI MÀU ---
 try:
     img_base64 = get_base64_of_bin_file(bg_path)
     custom_css = f"""
     <style>
+    /* Ẩn logo Streamlit và Menu góc phải */
+    #MainMenu {{visibility: hidden;}}
+    footer {{visibility: hidden;}}
+    header {{visibility: hidden;}}
+    
     /* Hình nền */
     [data-testid="stAppViewContainer"] {{
         background-image: url("data:image/png;base64,{img_base64}");
@@ -146,6 +153,7 @@ with st.container():
         co_delivery_str = st.radio("🛵 Có giao hàng (App)?", ["Không", "Có"], index=1)
         cho_ngoi_lau_str = st.radio("💻 Cho khách ngồi lâu (làm việc)?", ["Không", "Có"], index=1)
 
+# Chuyển đổi map_dict
 map_dict = {"Có": 1, "Không": 0}
 vi_tri = map_dict[vi_tri_str]
 co_cho_ngoi = map_dict[co_cho_ngoi_str]
@@ -157,11 +165,13 @@ st.markdown("---")
 # 4. XỬ LÝ NÚT DỰ ĐOÁN & POP-UP
 if st.button("🚀 PHÂN TÍCH DOANH THU", use_container_width=True):
     try:
+        # Hiệu ứng pop-up toast loading
         st.toast('Đang khởi động AI...', icon='🤖')
         time.sleep(0.5)
         st.toast('Đang thu thập dữ liệu thị trường...', icon='📊')
         time.sleep(0.5)
         
+        # Load mô hình
         model = joblib.load('best_revenue_model.pkl')
         
         raw_data = {
@@ -177,15 +187,18 @@ if st.button("🚀 PHÂN TÍCH DOANH THU", use_container_width=True):
         daily_revenue = model.predict(df_input[FEATURES])[0]
         daily_revenue = max(daily_revenue, 0)
         
+        # Hiệu ứng bóng bay
         st.balloons()
         st.toast('Tính toán thành công!', icon='🎉')
         
+        # Hiển thị kết quả trong khung đẹp mắt
         st.success("💰 **KẾT QUẢ DỰ ĐOÁN**")
         col_res1, col_res2, col_res3 = st.columns(3)
         col_res1.metric("Doanh thu / Ngày 🪙", f"{daily_revenue:,.0f} đ")
         col_res2.metric("Doanh thu / Tháng 💵", f"{daily_revenue * 30:,.0f} đ")
         col_res3.metric("Doanh thu / Năm 📈", f"{daily_revenue * 365:,.0f} đ")
         
+        # Nhận xét
         st.markdown("### 🔍 Phân Tích Chuyên Gia")
         if daily_revenue >= 10_000_000:
             st.info("🌟 **Rất tiềm năng!** Mô hình kinh doanh đang mang lại dòng tiền xuất sắc. Hãy cân nhắc mở rộng quy mô.")
