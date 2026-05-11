@@ -1,0 +1,9 @@
+[client]
+# Ép Streamlit luôn hiển thị thanh công cụ góc phải (chứa nút chỉnh theme) cho mọi người xem
+toolbarMode = "viewer"
+
+[theme]
+# Tự động nhận diện chế độ Sáng/Tối (Light/Dark) theo cài đặt hệ điều hành của điện thoại/máy tính
+base = "system"
+# Giữ màu chủ đạo của ứng dụng là màu vàng/hổ phách (phù hợp với tone cà phê của bạn)
+primaryColor = "#FFC107"
