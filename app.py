@@ -1,11 +1,31 @@
 import streamlit as st
+from PIL import Image  # Thư viện dùng để đọc file ảnh làm icon
 import pandas as pd
 import joblib
 import time
 import base64
-from PIL import Image  # Thư viện dùng để đọc file ảnh làm icon
 
-# 1. HÀM FEATURE ENGINEERING
+# ==========================================
+# 1. CẤU HÌNH GIAO DIỆN & APP ICON (BẮT BUỘC PHẢI ĐỂ ĐẦU TIÊN)
+# ==========================================
+logo_path = "logo.png"
+
+try:
+    # Sử dụng chính tấm logo.png làm Page Icon hiển thị trên trình duyệt và thiết bị di động
+    app_icon = Image.open(logo_path)
+except Exception:
+    app_icon = "☕"  # Backup nếu lỗi không tìm thấy file ảnh
+
+# Thiết lập cấu hình trang (Lệnh Streamlit đầu tiên)
+st.set_page_config(
+    page_title="CafeinSight", 
+    page_icon=app_icon, 
+    layout="centered"
+)
+
+# ==========================================
+# 2. HÀM FEATURE ENGINEERING & ĐƯỜNG DẪN FILE
+# ==========================================
 def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df['gia_per_khach'] = df['gia_tb'] / (df['khach_ngay'] + 1)
@@ -28,20 +48,7 @@ FEATURES = [
     'tiem_nang_giua_lai'
 ]
 
-# ĐƯỜNG DẪN FILE DÀNH CHO DEPLOY MẠNG (Không dùng ổ C nữa)
 bg_path = "istockphoto-1822889082-612x612.png"
-logo_path = "logo.png"
-
-# 2. CẤU HÌNH GIAO DIỆN & APP ICON
-try:
-    # --- ĐÂY LÀ ĐOẠN ĐỔI LOGO TRÊN ĐIỆN THOẠI ---
-    # Dùng chính tấm logo.png của bạn làm Page Icon
-    app_icon = Image.open(logo_path)
-except:
-    app_icon = "☕"  # Backup nếu lỗi không tìm thấy file
-
-# Thiết lập App Icon
-st.set_page_config(page_title="CafeinSight", page_icon=app_icon, layout="centered")
 
 @st.cache_data
 def get_base64_of_bin_file(bin_file):
@@ -49,7 +56,9 @@ def get_base64_of_bin_file(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-# --- CUSTOM CSS: HÌNH NỀN, ẨN MENU, ĐỔI MÀU ---
+# ==========================================
+# 3. CUSTOM CSS: HÌNH NỀN, ẨN MENU, ĐỔI MÀU
+# ==========================================
 try:
     img_base64 = get_base64_of_bin_file(bg_path)
     custom_css = f"""
@@ -135,7 +144,9 @@ except FileNotFoundError:
 st.title("Ước Tính Doanh Thu Quán Cà Phê")
 st.markdown("---")
 
-# 3. NHẬP LIỆU
+# ==========================================
+# 4. NHẬP LIỆU GIAO DIỆN
+# ==========================================
 with st.container():
     st.markdown("### 📋 Nhập thông tin quán của bạn")
     col1, col2 = st.columns(2)
@@ -162,7 +173,9 @@ cho_ngoi_lau = map_dict[cho_ngoi_lau_str]
 
 st.markdown("---")
 
-# 4. XỬ LÝ NÚT DỰ ĐOÁN & POP-UP
+# ==========================================
+# 5. XỬ LÝ NÚT DỰ ĐOÁN & POP-UP KẾT QUẢ
+# ==========================================
 if st.button("🚀 PHÂN TÍCH DOANH THU", use_container_width=True):
     try:
         # Hiệu ứng pop-up toast loading
