@@ -63,12 +63,8 @@ try:
     img_base64 = get_base64_of_bin_file(bg_path)
     custom_css = f"""
     <style>
-    /* Ẩn logo Streamlit và Menu "Made with Streamlit" dưới chân trang */
-    #MainMenu {{visibility: hidden;}}
+    /* Ẩn footer "Made with Streamlit" để giữ giao diện sạch đẹp */
     footer {{visibility: hidden;}}
-    
-    /* ĐÃ HIỆN LẠI HEADER ĐỂ CHỈNH MODE SÁNG/TỐI */
-    header {{visibility: visible !important;}}
     
     /* Hình nền */
     [data-testid="stAppViewContainer"] {{
